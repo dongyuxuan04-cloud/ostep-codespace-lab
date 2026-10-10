@@ -26,6 +26,9 @@ Stats: IO Busy  0 (0.00%)
 ```
 - Verified result / 验证结果:
 - Analysis / 分析:
+```
+因为两个进程都只执行 CPU 指令，不涉及 I/O 等待，所以 CPU 始终处于忙碌状态，利用率为 100%。
+```
 
 ## Q2
 - Prediction / 预测:
@@ -55,6 +58,9 @@ Stats: IO Busy  5 (45.45%)
 ```
 - Verified result / 验证结果:
 - Analysis / 分析:
+```
+两个进程总共需要 11 个时间单位。由于 PID 1 执行 I/O 时没有其他进程可以使用 CPU，导致 CPU 在 I/O 等待期间空闲，降低了整体利用率。
+```
 
 ## Q3
 - Prediction / 预测:
@@ -79,6 +85,9 @@ Stats: IO Busy  5 (71.43%)
 ```
 - Verified result / 验证结果:
 - Analysis / 分析:
+```
+进程顺序确实重要。合理地安排 I/O 密集型进程和 CPU 密集型进程，可以提高 CPU 利用率，并缩短整个工作负载的完成时间。
+```
 
 ## Q4
 - Prediction / 预测:
@@ -106,6 +115,9 @@ Stats: IO Busy  5 (45.45%)
 ```
 - Verified result / 验证结果:
 - Analysis / 分析:
+```
+SWITCH_ON_END 会让系统在 I/O 操作完成之前不切换到另一个进程。这种策略使 I/O 等待期间的 CPU 资源得不到充分利用，降低了系统的整体效率。
+```
 
 ## Q5
 - Prediction / 预测:
@@ -129,6 +141,10 @@ Stats: IO Busy  5 (71.43%)
 ```
 - Verified result / 验证结果:
 - Analysis / 分析:
+```
+SWITCH_ON_IO 能提高 CPU 利用率，并缩短两个进程的总运行时间。
+当一个进程因 I/O 而阻塞时，应尽可能让其他就绪进程使用 CPU，而不是让 CPU 空等 I/O 完成。
+```
 
 ## Q6
 - Prediction / 预测:
@@ -177,6 +193,11 @@ Stats: IO Busy  15 (48.39%)
 ```
 - Verified result / 验证结果:
 - Analysis / 分析:
+```
+3个 CPU 密集型进程会先后完成，而 PID 0 的 I/O 完成后不会立即恢复运行。由于 PID 0 还有剩余的 I/O 指令，后续就会出现 CPU 空闲、I/O 继续执行的情况。
+IO_RUN_LATER 让 I/O 完成的进程延迟恢复运行，错过了及时发起下一次 I/O 请求的机会，导致 CPU 与 I/O 的并行程度降低。
+系统资源没有得到充分利用。CPU 利用率只有约 67.74%，说明约三分之一的总运行时间里 CPU 没有执行工作。
+```
 
 ## Q7
 - Prediction / 预测:
@@ -221,6 +242,10 @@ Stats: IO Busy  15 (71.43%)
 ```
 - Verified result / 验证结果:
 - Analysis / 分析:
+```
+IO_RUN_IMMEDIATE 的优势在于：I/O 一完成，就尽快让发起它的进程继续执行，以便它能及时启动下一次 I/O。
+这并不意味着 CPU 指令本身执行得更快，而是通过更合理地安排进程执行顺序，提高 CPU 和 I/O 设备的协同利用率，减少资源空闲时间。
+```
 
 ## Q8
 - Prediction / 预测:
@@ -470,3 +495,6 @@ SWITCH_ON_END：当前进程只有执行结束后才切换。即使它发出 I/O
 ```
 - Verified result / 验证结果:
 - Analysis / 分析:
+```
+对随机生成的进程而言，SWITCH_ON_IO 往往是更关键的设置，因为它决定了 CPU 能否在其他进程等待 I/O 时继续工作；IO_RUN_IMMEDIATE 则决定 I/O 完成后是否立即恢复相关进程。两者共同决定 CPU 与 I/O 的重叠程度，以及整个系统的资源利用率。
+```
